@@ -10,13 +10,13 @@ private:
 		vertex **next;
 		int val;
 		unsigned int num_edges;
-		int dfs;
+		int for_dfs;
 		vertex()
 		{
 			next = nullptr;
 			val = 0;
 			num_edges = 0;
-			dfs = 0;
+			for_dfs = 0;
 		}
 		~vertex()
 		{
@@ -32,10 +32,57 @@ private:
 			}
 			//std::cout<< " destr end\n";
 		}
+
+
+		//void dfs_v(vertex * v)
+		//{
+		//	if (dfs == 1)  // Если мы здесь уже были, то тут больше делать нечего
+		//	{
+		//		std::cout << val << " exit, cause dfs=1\n";
+		//		return;
+		//	}
+		//	dfs = 1; // Помечаем, что мы здесь были
+		//	if (next != nullptr)
+		//	{
+		//		for (int i = 0; i < num_edges; ++i)
+		//		{
+		//			std::cout << val << " call DFS for V[" << i << "]\n";
+		//			dfs_v(next[i]);
+		//		}
+		//	}
+		//	else
+		//	{
+		//		return;
+		//	}
+		//}
 	};
-public:
+private:
 	int num_vertices;
 	vertex *V;
+
+
+	int nodeindex(vertex *versh) {
+		for (int i = 0; i < num_vertices; i++) {
+			if (&V[i] == versh) {
+				return i + 1;
+			}
+		}
+		return -1;
+	}
+	void dfs(vertex *versh, int *vector, int &m) {
+		if (versh->for_dfs == 1) {
+			return;
+		}
+		versh->for_dfs = 1;
+		vector[m] = nodeindex(versh);
+		m += 1;
+		for (int i = 0; i < versh->num_edges; i++) {
+			dfs(versh->next[i], vector, m);
+		}
+	}
+
+
+	
 public:
 	Graph()
 	{
@@ -106,13 +153,28 @@ public:
 		}
 		return success;
 	}
-	bool printDFS(std::ostream &stream)
-	{
-		for (int i = 0; i < num_vertices; i++)
-		{
-
+	/////////////
+	int* dfs() {
+		int*vector = new int[num_vertices];
+		for (int i = 0; i < num_vertices; i++) {
+			vector[i] = -1;
 		}
+		int m = 0;
+		for (int i = 0; i < num_vertices; i++) {
+			if (V[i].for_dfs == 0) {
+				dfs(&V[i], vector, m);
+			}
+		}
+		return vector;
 	}
+	void printdfs(std::ostream & stream) {
+		int *vector = dfs();
+		for (int i = 0; i < num_vertices&&vector[i] != -1; i++) {
+			stream << vector[i] << " ";
+		}
+		stream << '\n';
+	}
+	///////////////////
 };
 int main() {
 	std::ifstream fin;
@@ -120,8 +182,9 @@ int main() {
 
 	Graph gr;
 	gr.read(fin);
-	for (int i = 0; i< 4; i++)
-		std::cout << gr.V[i].val << " - " << gr.V[i].num_edges << '\n';
+	gr.printdfs(std::cout);
+	//for (int i = 0; i< 4; i++)
+	//	std::cout << gr.V[i].val << " - " << gr.V[i].num_edges << '\n';
 
 	return 0;
 }
